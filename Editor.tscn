@@ -200,8 +200,8 @@ margin_right = 1024.0
 margin_bottom = 600.0
 access = 2
 filters = PoolStringArray( "*.mp3 ; MP3 Files" )
-current_dir = "/Users/Xogletree/Documents/Code/Godot/CloudTTS"
-current_path = "/Users/Xogletree/Documents/Code/Godot/CloudTTS/"
+current_dir = "/Users"
+current_path = "/Users/"
 __meta__ = {
 "_edit_use_anchors_": false
 }

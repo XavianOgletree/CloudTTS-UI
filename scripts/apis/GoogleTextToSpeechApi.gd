@@ -1,4 +1,4 @@
-extends "res://scripts/apis/TextToSpeechAPI.gd"
+extends "res://scripts/apis/TextToSpeechApi.gd"
 
 func get_voices(
 		http: HTTPRequest,

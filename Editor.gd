@@ -4,7 +4,7 @@ signal save_dailog_closed(result)
 
 # Add you API's here
 var api_list = {
-	Google = load("res://scripts/apis/GoogleTextToSpeechApi.gd").new()
+	Google = preload("res://scripts/apis/GoogleTextToSpeechApi.gd").new()
 }
 
 # Important UI Elements
