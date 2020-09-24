@@ -1,0 +1,196 @@
+[gd_scene load_steps=6 format=2]
+
+[ext_resource path="res://Roboto-Regular.ttf" type="DynamicFontData" id=1]
+[ext_resource path="res://Editor.gd" type="Script" id=2]
+
+[sub_resource type="StyleBoxFlat" id=1]
+bg_color = Color( 1, 1, 1, 1 )
+
+[sub_resource type="DynamicFont" id=2]
+use_mipmaps = true
+use_filter = true
+font_data = ExtResource( 1 )
+
+[sub_resource type="Theme" id=3]
+default_font = SubResource( 2 )
+CheckBox/colors/font_color = Color( 0.88, 0.88, 0.88, 1 )
+CheckBox/colors/font_color_disabled = Color( 0.9, 0.9, 0.9, 0.2 )
+CheckBox/colors/font_color_hover = Color( 0.94, 0.94, 0.94, 1 )
+CheckBox/colors/font_color_hover_pressed = Color( 1, 1, 1, 1 )
+CheckBox/colors/font_color_pressed = Color( 1, 1, 1, 1 )
+CheckBox/constants/check_vadjust = 0
+CheckBox/constants/hseparation = 4
+CheckBox/fonts/font = null
+CheckBox/icons/checked = null
+CheckBox/icons/radio_checked = null
+CheckBox/icons/radio_unchecked = null
+CheckBox/icons/unchecked = null
+CheckBox/styles/disabled = null
+CheckBox/styles/focus = null
+CheckBox/styles/hover = null
+CheckBox/styles/hover_pressed = null
+CheckBox/styles/normal = null
+CheckBox/styles/pressed = null
+PanelContainer/styles/panel = SubResource( 1 )
+
+[node name="Control" type="Control"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+theme = SubResource( 3 )
+script = ExtResource( 2 )
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="PanelContainer" type="PanelContainer" parent="."]
+anchor_right = 1.0
+anchor_bottom = 1.0
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="MarginContainer" type="MarginContainer" parent="PanelContainer"]
+margin_right = 1024.0
+margin_bottom = 600.0
+custom_constants/margin_right = 7
+custom_constants/margin_top = 7
+custom_constants/margin_left = 7
+custom_constants/margin_bottom = 7
+
+[node name="HBoxContainer" type="HBoxContainer" parent="PanelContainer/MarginContainer"]
+margin_left = 7.0
+margin_top = 7.0
+margin_right = 1017.0
+margin_bottom = 593.0
+
+[node name="TtsTextEdit" type="TextEdit" parent="PanelContainer/MarginContainer/HBoxContainer"]
+margin_right = 670.0
+margin_bottom = 586.0
+size_flags_horizontal = 3
+
+[node name="VBoxContainer" type="VBoxContainer" parent="PanelContainer/MarginContainer/HBoxContainer"]
+margin_left = 674.0
+margin_right = 1010.0
+margin_bottom = 586.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+size_flags_stretch_ratio = 0.5
+alignment = 1
+
+[node name="ApiOptionButton" type="OptionButton" parent="PanelContainer/MarginContainer/HBoxContainer/VBoxContainer"]
+margin_top = 203.0
+margin_right = 336.0
+margin_bottom = 228.0
+size_flags_horizontal = 3
+text = "API Providers"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="GridContainer" type="GridContainer" parent="PanelContainer/MarginContainer/HBoxContainer/VBoxContainer"]
+margin_top = 232.0
+margin_right = 336.0
+margin_bottom = 323.0
+columns = 2
+
+[node name="Label" type="Label" parent="PanelContainer/MarginContainer/HBoxContainer/VBoxContainer/GridContainer"]
+margin_top = 5.0
+margin_right = 88.0
+margin_bottom = 24.0
+custom_colors/font_color = Color( 0, 0, 0, 1 )
+text = "Api Key:"
+
+[node name="ApiKeyLineEdit" type="LineEdit" parent="PanelContainer/MarginContainer/HBoxContainer/VBoxContainer/GridContainer"]
+margin_left = 92.0
+margin_right = 336.0
+margin_bottom = 29.0
+size_flags_horizontal = 3
+
+[node name="Label2" type="Label" parent="PanelContainer/MarginContainer/HBoxContainer/VBoxContainer/GridContainer"]
+margin_top = 38.0
+margin_right = 88.0
+margin_bottom = 57.0
+custom_colors/font_color = Color( 0, 0, 0, 1 )
+text = "Serivce URL:"
+
+[node name="SurviceUrlLineEdit" type="LineEdit" parent="PanelContainer/MarginContainer/HBoxContainer/VBoxContainer/GridContainer"]
+margin_left = 92.0
+margin_top = 33.0
+margin_right = 336.0
+margin_bottom = 62.0
+size_flags_horizontal = 3
+
+[node name="GetVoicesButton" type="Button" parent="PanelContainer/MarginContainer/HBoxContainer/VBoxContainer/GridContainer"]
+margin_top = 66.0
+margin_right = 88.0
+margin_bottom = 91.0
+text = "Get Voices"
+
+[node name="VoiceOptionButton" type="OptionButton" parent="PanelContainer/MarginContainer/HBoxContainer/VBoxContainer/GridContainer"]
+margin_left = 92.0
+margin_top = 66.0
+margin_right = 336.0
+margin_bottom = 91.0
+text = "Voices"
+
+[node name="OneFilePerLineBox" type="CheckBox" parent="PanelContainer/MarginContainer/HBoxContainer/VBoxContainer"]
+margin_left = 95.0
+margin_top = 327.0
+margin_right = 241.0
+margin_bottom = 354.0
+size_flags_horizontal = 4
+custom_colors/font_color_disabled = Color( 0.501961, 0.501961, 0.501961, 1 )
+custom_colors/font_color_hover_pressed = Color( 0, 0, 0, 1 )
+custom_colors/font_color = Color( 0, 0, 0, 1 )
+custom_colors/font_color_hover = Color( 0, 0, 0, 1 )
+custom_colors/font_color_pressed = Color( 0, 0, 0, 1 )
+text = "One File Per Line"
+
+[node name="FilePrefixContainer" type="HBoxContainer" parent="PanelContainer/MarginContainer/HBoxContainer/VBoxContainer"]
+visible = false
+margin_top = 341.0
+margin_right = 336.0
+margin_bottom = 370.0
+
+[node name="Label" type="Label" parent="PanelContainer/MarginContainer/HBoxContainer/VBoxContainer/FilePrefixContainer"]
+margin_top = 5.0
+margin_right = 78.0
+margin_bottom = 24.0
+custom_colors/font_color = Color( 0, 0, 0, 1 )
+text = "File Prefix: "
+
+[node name="FilePrefixLineEdit" type="LineEdit" parent="PanelContainer/MarginContainer/HBoxContainer/VBoxContainer/FilePrefixContainer"]
+margin_left = 82.0
+margin_right = 336.0
+margin_bottom = 29.0
+size_flags_horizontal = 3
+text = "unitited"
+align = 1
+
+[node name="SaveAudioButton" type="Button" parent="PanelContainer/MarginContainer/HBoxContainer/VBoxContainer"]
+margin_left = 122.0
+margin_top = 358.0
+margin_right = 214.0
+margin_bottom = 383.0
+size_flags_horizontal = 4
+text = "Save Audio"
+
+[node name="SaveDailog" type="FileDialog" parent="PanelContainer"]
+margin_right = 1024.0
+margin_bottom = 600.0
+access = 2
+current_dir = "/Users/Xogletree/Documents/Code/Godot/CloudTTS"
+current_path = "/Users/Xogletree/Documents/Code/Godot/CloudTTS/"
+
+[node name="WarningMessageDailog" type="AcceptDialog" parent="PanelContainer"]
+margin_left = 470.0
+margin_top = 266.0
+margin_right = 554.0
+margin_bottom = 334.0
+size_flags_horizontal = 6
+size_flags_vertical = 6
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="HTTPRequest" type="HTTPRequest" parent="."]
