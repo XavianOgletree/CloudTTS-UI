@@ -78,9 +78,9 @@ size_flags_stretch_ratio = 0.5
 alignment = 1
 
 [node name="ApiOptionButton" type="OptionButton" parent="PanelContainer/MarginContainer/HBoxContainer/VBoxContainer"]
-margin_top = 203.0
+margin_top = 180.0
 margin_right = 336.0
-margin_bottom = 228.0
+margin_bottom = 205.0
 size_flags_horizontal = 3
 text = "API Providers"
 __meta__ = {
@@ -88,9 +88,9 @@ __meta__ = {
 }
 
 [node name="GridContainer" type="GridContainer" parent="PanelContainer/MarginContainer/HBoxContainer/VBoxContainer"]
-margin_top = 232.0
+margin_top = 209.0
 margin_right = 336.0
-margin_bottom = 323.0
+margin_bottom = 300.0
 columns = 2
 
 [node name="Label" type="Label" parent="PanelContainer/MarginContainer/HBoxContainer/VBoxContainer/GridContainer"]
@@ -135,9 +135,9 @@ text = "Voices"
 
 [node name="OneFilePerLineBox" type="CheckBox" parent="PanelContainer/MarginContainer/HBoxContainer/VBoxContainer"]
 margin_left = 95.0
-margin_top = 327.0
+margin_top = 304.0
 margin_right = 241.0
-margin_bottom = 354.0
+margin_bottom = 331.0
 size_flags_horizontal = 4
 custom_colors/font_color_disabled = Color( 0.501961, 0.501961, 0.501961, 1 )
 custom_colors/font_color_hover_pressed = Color( 0, 0, 0, 1 )
@@ -169,20 +169,44 @@ align = 1
 
 [node name="SaveAudioButton" type="Button" parent="PanelContainer/MarginContainer/HBoxContainer/VBoxContainer"]
 margin_left = 122.0
-margin_top = 358.0
+margin_top = 335.0
 margin_right = 214.0
-margin_bottom = 383.0
+margin_bottom = 360.0
 size_flags_horizontal = 4
 text = "Save Audio"
 
-[node name="SaveDailog" type="FileDialog" parent="PanelContainer"]
+[node name="SaveProgressLabel" type="Label" parent="PanelContainer/MarginContainer/HBoxContainer/VBoxContainer"]
+margin_top = 364.0
+margin_right = 336.0
+margin_bottom = 383.0
+custom_colors/font_color = Color( 0, 0, 0, 1 )
+text = "Saving 0/0"
+align = 1
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="SaveProgressBar" type="ProgressBar" parent="PanelContainer/MarginContainer/HBoxContainer/VBoxContainer"]
+margin_top = 387.0
+margin_right = 336.0
+margin_bottom = 406.0
+
+[node name="HTTPRequest" type="HTTPRequest" parent="."]
+
+[node name="DailogLayer" type="CanvasLayer" parent="."]
+
+[node name="SaveDailog" type="FileDialog" parent="DailogLayer"]
 margin_right = 1024.0
 margin_bottom = 600.0
 access = 2
+filters = PoolStringArray( "*.mp3 ; MP3 Files" )
 current_dir = "/Users/Xogletree/Documents/Code/Godot/CloudTTS"
 current_path = "/Users/Xogletree/Documents/Code/Godot/CloudTTS/"
+__meta__ = {
+"_edit_use_anchors_": false
+}
 
-[node name="WarningMessageDailog" type="AcceptDialog" parent="PanelContainer"]
+[node name="WarningMessageDailog" type="AcceptDialog" parent="DailogLayer"]
 margin_left = 470.0
 margin_top = 266.0
 margin_right = 554.0
@@ -193,4 +217,9 @@ __meta__ = {
 "_edit_use_anchors_": false
 }
 
-[node name="HTTPRequest" type="HTTPRequest" parent="."]
+[node name="OverwriteDailog" type="AcceptDialog" parent="DailogLayer"]
+margin_right = 200.0
+margin_bottom = 70.0
+popup_exclusive = true
+window_title = "Overwrite File?"
+dialog_autowrap = true

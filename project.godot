@@ -20,6 +20,10 @@ run/main_scene="res://Editor.tscn"
 run/low_processor_mode=true
 config/icon="res://icon.png"
 
+[autoload]
+
+Warnings="*res://autoloads/Warnings.gd"
+
 [display]
 
 window/dpi/allow_hidpi=true
@@ -29,4 +33,3 @@ window/dpi/allow_hidpi=true
 quality/driver/driver_name="GLES2"
 vram_compression/import_etc=true
 vram_compression/import_etc2=false
-environment/default_environment="res://default_env.tres"

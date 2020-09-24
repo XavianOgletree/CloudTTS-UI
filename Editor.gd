@@ -1,9 +1,11 @@
 extends Control
-# Some precoded messages
-const API_WARNING := "There is no API key provided. Please provide API key."
-const TTS_EMPTY_WARNING := "There is no text to make into speech. Please provide Text."
-const SURVICE_URL_WARNING := "There is no survice URL. Please provide service URL"
-const PREFIX_EMPTY_WARNING := "There is no file prefix. Please provide a file prefix"
+signal save_dailog_closed(result)
+
+
+# Add you API's here
+var api_list = {
+	Google = load("res://scripts/apis/GoogleTextToSpeechApi.gd").new()
+}
 
 # Important UI Elements
 onready var TtsTextEdit := $PanelContainer/MarginContainer/HBoxContainer/TtsTextEdit
@@ -16,165 +18,206 @@ onready var OneFilePerLineBox := $PanelContainer/MarginContainer/HBoxContainer/V
 onready var FilePrefixContainer := $PanelContainer/MarginContainer/HBoxContainer/VBoxContainer/FilePrefixContainer
 onready var FilePrefixLineEdit := $PanelContainer/MarginContainer/HBoxContainer/VBoxContainer/FilePrefixContainer/FilePrefixLineEdit
 onready var SaveAudioButton := $PanelContainer/MarginContainer/HBoxContainer/VBoxContainer/SaveAudioButton
-onready var SaveDailog := $PanelContainer/SaveDailog
-onready var WarningMessageDailog := $PanelContainer/WarningMessageDailog
+onready var SaveProgressLabel := $PanelContainer/MarginContainer/HBoxContainer/VBoxContainer/SaveProgressLabel
+onready var SaveProgressBar := $PanelContainer/MarginContainer/HBoxContainer/VBoxContainer/SaveProgressBar
+
+onready var SaveDailog := $DailogLayer/SaveDailog
+onready var WarningMessageDailog := $DailogLayer/WarningMessageDailog
+onready var OverwriteDailog := $DailogLayer/OverwriteDailog
 
 # Called when theis node enters the scene tree
-func _ready():
-	ApiOptionButton.add_item("Google")
-	ApiOptionButton.add_item("IBM")
+func _ready() -> void:
+	for api_name in api_list:
+		ApiOptionButton.add_item(api_name)
+		api_list[api_name].connect("error_occured", self, "show_message")
 	
+	OneFilePerLineBox.connect("toggled", self, "_on_one_file_per_line_toggled")
 	GetVoicesButton.connect("pressed", self, "_on_get_voices_button_pressed")
 	SaveAudioButton.connect("pressed", self, "_on_save_audio_button_pressed")
+	SaveDailog.connect("dir_selected", self, "_on_dir_selected")
+	SaveDailog.connect("file_selected", self, "_on_file_selected")
+	SaveDailog.connect("popup_hide", self, "_on_popup_hide")
 	
+	OverwriteDailog.get_ok().hide()
+	OverwriteDailog.add_button("Overwrite", true, "overwrite")
+	OverwriteDailog.add_button("Overwrite All", true, "overwrite-all")
+	OverwriteDailog.add_button("Skip", true, "skip")
+
+
+func _on_dir_selected(dir: String) -> void:
+	emit_signal("save_dailog_closed", dir)
+
+
+func _on_file_selected(path: String) -> void:
+	emit_signal("save_dailog_closed", path)
+
+
+func _on_popup_hide() -> void:
+	emit_signal("save_dailog_closed", "")
+
+
+func _on_one_file_per_line_toggled(button_pressed: bool) -> void:
+	FilePrefixContainer.visible = button_pressed
+
 
 func _on_get_voices_button_pressed() -> void:
-	if ApiKeyLineEdit.text.empty():
-		show_message(API_WARNING)
-		return
-	
 	var api_key : String = ApiKeyLineEdit.text
 	var survice_url : String = SurviceUrlLineEdit.text
-	var voices : Array
-	match ApiOptionButton.get_item_text(ApiOptionButton.selected):
-		"Google":
-			voices = yield(get_voices_google(api_key, survice_url), "completed")
-			
-		"IBM":
-			pass
+	var api_name : String = ApiOptionButton.get_item_text(
+		ApiOptionButton.selected
+	)
+	var api = api_list[api_name]
+	var voices = api.get_voices($HTTPRequest, api_key, survice_url)
+	if voices is GDScriptFunctionState:
+		voices = yield(voices, "completed")
 	
 	VoiceOptionButton.clear()
+	if voices.empty():
+		return
+		
 	for i in range(len(voices)):
 		var voice = voices[i]
 		VoiceOptionButton.add_item(voice.name)
 		VoiceOptionButton.set_item_metadata(i, voice.metadata)
-				
+	
+	VoiceOptionButton.selected = 0
+
+
 func _on_save_audio_button_pressed() -> void:
 	if SaveDailog.visible:
 		return
 		
-	if ApiKeyLineEdit.text.empty():
-		show_message(API_WARNING)
-		return
-	
-	if SurviceUrlLineEdit.text.empty():
-		show_message(SURVICE_URL_WARNING)
+	if VoiceOptionButton.selected == -1:
+		show_message(Warnings.NO_VOICE_SELECTED)
 		return
 	
 	if TtsTextEdit.text.empty():
-		show_message(TTS_EMPTY_WARNING)
+		show_message(Warnings.EMPTY_TTS_TEXT)
 		return
 	
-	else:
-		var tts_text = TtsTextEdit.text
-		
-		if OneFilePerLineBox.pressed:
-			if FilePrefixLineEdit.text.empty():
-				show_message(PREFIX_EMPTY_WARNING)
-				return
-			
-			SaveDailog.mode = FileDialog.MODE_OPEN_DIR
-			SaveDailog.popup_exclusive = true
-			SaveDailog.popup_centered()
-			var file_dir : String = yield(SaveDailog, "dir_selected")
-			var file_prefix : String = FilePrefixLineEdit.text
-			
-			
-			
-		else:
-			SaveDailog.mode = FileDialog.MODE_OPEN_FILE
-			SaveDailog.popup_exclusive = true
-			SaveDailog.popup_centered()
-			var file_path : String = yield(SaveDailog, "file_selected")
-			save_single_audio_file(tts_text, file_path)
-			
-
-func save_multiple_audio_file(tts_text: String, file_dir: String, file_prefix: String) -> void:
-	var lines = tts_text.split("\n")
-	for i in range(len(lines)):
-		pass
-		#save_single_audio_file(file_dir + "/" + file_prefix)
-
-func save_single_audio_file(tts_text: String, file_path: String) -> void:
-	var api_key : String = ApiKeyLineEdit.text
-	var survice_url : String = SurviceUrlLineEdit.text
-	var audio_data : PoolByteArray
-	match ApiOptionButton.get_item_text(ApiOptionButton.selected):
-		"Google":
-			audio_data = yield(get_audio_google(api_key, survice_url, tts_text), "completed")
-			
-		"IBM":
-			pass
+	var api_key = ApiKeyLineEdit.text
+	var survice_url = SurviceUrlLineEdit.text
+	var tts_text = TtsTextEdit.text
+	var voice_metadata = VoiceOptionButton.get_item_metadata(
+		VoiceOptionButton.selected
+	)
+	var api_name = ApiOptionButton.get_item_text(
+		ApiOptionButton.selected
+	)
+	var api = api_list[api_name]
 	
-	if not audio_data:
+	if OneFilePerLineBox.pressed:
+		SaveDailog.mode = FileDialog.MODE_OPEN_DIR
+		SaveDailog.popup_exclusive = true
+		SaveDailog.popup_centered(get_viewport_rect().size * 0.75)
+		
+		var file_prefix = FilePrefixLineEdit.text
+		if file_prefix.empty():
+			emit_signal(Warnings.EMPTY_PREFIX)
+			return
+		
+		var dir = yield(self, "save_dailog_closed")
+		if dir.empty():
+			show_message(Warnings.NO_DIRECTORY_SELECTED)
+			return
+		
+		var lines = tts_text.split("\n")
+		var overwrite_all = false
+		var file = File.new()
+		
+		SaveProgressBar.max_value = len(lines)
+		SaveProgressLabel.text = "Saving 0/%d" % len(lines)
+		for i in range(len(lines)):
+			var file_path = dir + "/" + file_prefix + "%02d.mp3" % i
+			
+			if not overwrite_all and file.file_exists(file_path):
+				OverwriteDailog.popup_centered()
+				OverwriteDailog.dialog_text = "File %s exist. Do you want to overwrite it?" % file_path
+				
+				var choice = yield(OverwriteDailog, "custom_action")
+				match choice:
+					"overwrite-all":
+						overwrite_all = true
+					"skip":
+						continue
+				
+				OverwriteDailog.hide()
+			
+			var result = save_single_audio_file(
+				api, 
+				api_key, 
+				survice_url, 
+				lines[i], 
+				voice_metadata, 
+				file_path
+			)
+			
+			if result is GDScriptFunctionState:
+				yield(result, "completed")
+			
+			set_progress(i, len(lines))
+		
+		set_progress(len(lines), len(lines))
+		show_message("All files saved!")
+		
+	else:
+		SaveDailog.mode = FileDialog.MODE_SAVE_FILE
+		SaveDailog.popup_exclusive = true
+		SaveDailog.popup_centered_clamped(get_viewport_rect().size - Vector2(100, 100) * 0.75)
+		
+		var file_path : String = yield(self, "save_dailog_closed")
+		if file_path.empty() or file_path.ends_with("/.mp3"):
+			show_message(Warnings.NO_FILE_SELECTED)
+			return 
+		
+		save_single_audio_file(
+			api, 
+			api_key, 
+			survice_url, 
+			tts_text, 
+			voice_metadata, 
+			file_path
+		)
+		
+		show_message("Audio successfully saved!")
+
+
+func save_single_audio_file(
+		api,
+		api_key : String,
+		survice_url : String,
+		tts_text : String,
+		voice_metadata,
+		file_path : String) -> void:
+	
+	var audio_data = api.get_audio(
+		$HTTPRequest, 
+		api_key, 
+		survice_url,
+		tts_text,
+		voice_metadata
+	)
+	if audio_data is GDScriptFunctionState:
+		audio_data = yield(audio_data, "completed")
+	
+	if audio_data.empty():
+		show_message("No audio recieved.")
 		return
+	
+	
+	var file := File.new()
+	file.open(file_path, File.WRITE)
+	file.store_buffer(audio_data)
+	file.close()
 
-func get_voices_google(api_key: String, api_url: String) -> Array:
-	var url = "https://texttospeech.googleapis.com/v1/voices?key=%s&languageCode=en-US" % api_key
-	$HTTPRequest.request(url)
-	
-	var response = yield($HTTPRequest, "request_completed")
-	var result: int = response[0]
-	var code: int = response[1]
-	var headers: PoolStringArray = response[2]
-	var body: PoolByteArray = response[3]
-	
-	if result == HTTPRequest.RESULT_SUCCESS:
-		var json = JSON.parse(body.get_string_from_utf8()).result
-		var voices : Array = []
-		for voice in json.voices:
-			if voice.languageCodes[0] == "en-US":
-				voices.append({name = "%s %s" % [voice.name, voice.ssmlGender], metadata = voice})
-		
-		return voices
-		
-	else:
-		show_message("%d\n%s" % [code, body.get_string_from_utf8()])
-		return []
-	
-	
-
-func get_voices_ibm(api_key: String, api_url: String) -> Array:
-	if SurviceUrlLineEdit.text.empty():
-		show_message(SURVICE_URL_WARNING) 
-	
-	return []
-
-
-func get_audio_google(api_key: String, api_url: String, text: String) -> PoolByteArray:
-	var url = "%s?key=%s" % [api_url, api_key]
-	var selected_voice_index = VoiceOptionButton.selected
-	var voice_metadata = VoiceOptionButton.get_item_metadata(selected_voice_index)
-	
-	var json := to_json({
-		input = {text = text},
-		voice = {
-			languageCode = voice_metadata.languageCodes[0],
-			name = voice_metadata.name,
-			ssmlGender = voice_metadata.ssmlGender,
-		},
-		audioConfig = {audioEncoding = 'MP3'}
-	})
-	var request_headers := ["Content-Type: application/json"]
-	
-	$HTTPRequest.request(url, request_headers, true, HTTPClient.METHOD_POST, json)
-	var response = yield($HTTPRequest, "request_completed")
-	var result: int = response[0]
-	var code: int = response[1]
-	var response_headers: PoolStringArray = response[2]
-	var body: PoolByteArray = response[3]
-	
-	if result == HTTPRequest.RESULT_SUCCESS and code == 200:
-		var audio_data = JSON.parse(body.get_string_from_utf8()).result.audioContent
-		return Marshalls.base64_to_raw(audio_data)
-		
-	else:
-		show_message("%d\n%s" % [code, body.get_string_from_utf8()])
-		return null
-
-func get_audio_ibm():
-	pass
 
 func show_message(text: String) -> void:
 		WarningMessageDailog.dialog_text = text
 		WarningMessageDailog.popup_centered()
+
+
+func set_progress(current: int, count: int) -> void:
+	SaveProgressBar.value = current
+	SaveProgressLabel.text = "Saving %d/%d" % [current, count]
+	
+
