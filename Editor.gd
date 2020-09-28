@@ -155,7 +155,7 @@ func _on_save_audio_button_pressed() -> void:
 			if result is GDScriptFunctionState:
 				yield(result, "completed")
 			
-			set_progress(i, len(lines))
+			set_progress(i + 1, len(lines))
 		
 		set_progress(len(lines), len(lines))
 		show_message("All files saved!")

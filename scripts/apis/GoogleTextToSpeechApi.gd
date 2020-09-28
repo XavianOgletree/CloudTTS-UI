@@ -1,4 +1,5 @@
 extends "res://scripts/apis/TextToSpeechApi.gd"
+const SortingUtils = preload("res://scripts/utils/SortingUtils.gd")
 
 func get_voices(
 		http: HTTPRequest,
@@ -25,6 +26,7 @@ func get_voices(
 			if voice.languageCodes[0] == "en-US":
 				voices.append({name = "%s %s" % [voice.name, voice.ssmlGender], metadata = voice})
 		
+		voices.sort_custom(SortingUtils, "sort_decending_by_name")
 		return voices
 		
 	else:
