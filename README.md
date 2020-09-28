@@ -9,7 +9,7 @@ In order to develop and build this project from source, you'll need to complete 
 1. Download Godot Engine 3.2 from [here](https://downloads.tuxfamily.org/godotengine/3.2.3/).
 2. Import the project into Godot using the project viewer.
 3. Finally, [install the build templates from the editor.](https://docs.godotengine.org/en/stable/getting_started/workflow/export/exporting_projects.html)
-4. Configure you export resources as shown here:
+4. Configure you export resources as shown here:    
 ![Screen shot of the export resources](imgs/export-resources.png)
 
 With these steps completed, you should now be ready to develop and export the application. If you unfamiliar with Godot and GDScript, please refer to the [documentation](https://docs.godotengine.org/en/stable/about/introduction.html).
