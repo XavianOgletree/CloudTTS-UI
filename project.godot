@@ -10,7 +10,6 @@ config_version=4
 
 _global_script_classes=[  ]
 _global_script_class_icons={
-
 }
 
 [application]
@@ -18,6 +17,9 @@ _global_script_class_icons={
 config/name="CloudTTS"
 run/main_scene="res://Editor.tscn"
 run/low_processor_mode=true
+boot_splash/image="res://icon.png"
+boot_splash/fullsize=false
+boot_splash/bg_color=Color( 0.117647, 0.117647, 0.117647, 1 )
 config/icon="res://icon.png"
 
 [autoload]
