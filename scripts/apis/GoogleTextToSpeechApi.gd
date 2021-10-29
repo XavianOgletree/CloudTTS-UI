@@ -1,14 +1,21 @@
 extends "res://scripts/apis/TextToSpeechApi.gd"
 const SortingUtils = preload("res://scripts/utils/SortingUtils.gd")
 
+func get_needs_url() -> bool:
+	return false
+
+func get_name() -> String:
+	return "Google"
+	
 func get_voices(
 		http: HTTPRequest,
 		api_key: String = "", 
 		api_url: String = "") -> Array:
 	
 	if api_key.empty():
-		emit_signal("error_occured", "There is no API key provided. Please provide API key.")
+		emit_signal("error_occured", Warnings.EMPTY_API)
 		return []
+	
 	
 	var url = "https://texttospeech.googleapis.com/v1/voices?key=%s&languageCode=en-US" % api_key
 	http.request(url)
@@ -30,7 +37,7 @@ func get_voices(
 		return voices
 		
 	else:
-		emit_signal("%d\n%s" % [code, body.get_string_from_utf8()])
+		emit_signal("error_occured", "%d\n%s" % [code, parse_json(body.get_string_from_utf8()).error.message])
 		return []
 		
 	
