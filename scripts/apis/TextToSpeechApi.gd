@@ -3,6 +3,13 @@ extends Reference
 # This signal should be emitted whenever there is an error in using the API
 signal error_occured(message)
 
+var needs_url: bool setget , get_needs_url
+
+# Returns true if this API needs a URL to function
+# Some providers do not need a key, but instead generate a unique URL
+func get_needs_url() -> bool:
+	return true
+
 #
 # Given a HTTPRequest object, the api_key and the api_url, get_voices() returns 
 # array that contains a series of dictionaries with following values:
