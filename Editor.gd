@@ -3,46 +3,83 @@ signal save_dailog_closed(result)
 
 
 # Add you API's here
-var api_list = {
-	Google = preload("res://scripts/apis/GoogleTextToSpeechApi.gd").new()
-}
+var api_list = {}
 
 # Important UI Elements
 onready var TtsTextEdit := $PanelContainer/MarginContainer/HBoxContainer/TtsTextEdit
-onready var ApiOptionButton := $PanelContainer/MarginContainer/HBoxContainer/VBoxContainer/ApiOptionButton
-onready var ApiKeyLineEdit := $PanelContainer/MarginContainer/HBoxContainer/VBoxContainer/GridContainer/ApiKeyLineEdit
-onready var SurviceUrlLineEdit := $PanelContainer/MarginContainer/HBoxContainer/VBoxContainer/GridContainer/SurviceUrlLineEdit
-onready var GetVoicesButton := $PanelContainer/MarginContainer/HBoxContainer/VBoxContainer/GridContainer/GetVoicesButton
-onready var VoiceOptionButton := $PanelContainer/MarginContainer/HBoxContainer/VBoxContainer/GridContainer/VoiceOptionButton
-onready var OneFilePerLineBox := $PanelContainer/MarginContainer/HBoxContainer/VBoxContainer/OneFilePerLineBox
-onready var FilePrefixContainer := $PanelContainer/MarginContainer/HBoxContainer/VBoxContainer/FilePrefixContainer
-onready var FilePrefixLineEdit := $PanelContainer/MarginContainer/HBoxContainer/VBoxContainer/FilePrefixContainer/FilePrefixLineEdit
-onready var SaveAudioButton := $PanelContainer/MarginContainer/HBoxContainer/VBoxContainer/SaveAudioButton
-onready var SaveProgressLabel := $PanelContainer/MarginContainer/HBoxContainer/VBoxContainer/SaveProgressLabel
-onready var SaveProgressBar := $PanelContainer/MarginContainer/HBoxContainer/VBoxContainer/SaveProgressBar
+onready var ApiOptionButton := $PanelContainer/MarginContainer/HBoxContainer/Panel/VBoxContainer/ApiOptionButton
+onready var ApiKeyLineEdit := $PanelContainer/MarginContainer/HBoxContainer/Panel/VBoxContainer/GridContainer/ApiKeyLineEdit
+onready var SurviceUrlLineEdit := $PanelContainer/MarginContainer/HBoxContainer/Panel/VBoxContainer/GridContainer/SurviceUrlLineEdit
+onready var GetVoicesButton := $PanelContainer/MarginContainer/HBoxContainer/Panel/VBoxContainer/GridContainer/GetVoicesButton
+onready var VoiceOptionButton := $PanelContainer/MarginContainer/HBoxContainer/Panel/VBoxContainer/GridContainer/VoiceOptionButton
+onready var OneFilePerLineBox := $PanelContainer/MarginContainer/HBoxContainer/Panel/VBoxContainer/OneFilePerLineBox
+onready var FilePrefixContainer := $PanelContainer/MarginContainer/HBoxContainer/Panel/VBoxContainer/FilePrefixContainer
+onready var FilePrefixLineEdit := $PanelContainer/MarginContainer/HBoxContainer/Panel/VBoxContainer/FilePrefixContainer/FilePrefixLineEdit
+onready var SaveAudioButton := $PanelContainer/MarginContainer/HBoxContainer/Panel/VBoxContainer/SaveAudioButton
+onready var SaveProgressLabel := $PanelContainer/MarginContainer/HBoxContainer/Panel/VBoxContainer/SaveProgressLabel
+onready var SaveProgressBar := $PanelContainer/MarginContainer/HBoxContainer/Panel/VBoxContainer/SaveProgressBar
 
-onready var SaveDailog := $DailogLayer/SaveDailog
-onready var WarningMessageDailog := $DailogLayer/WarningMessageDailog
-onready var OverwriteDailog := $DailogLayer/OverwriteDailog
+onready var SaveDialog := $DailogLayer/SaveDialog
+onready var WarningMessageDialog := $WarningMessageDialog
+onready var OverwriteDialog := $DailogLayer/OverwriteDialog
+onready var AboutDialog := $AboutDialog
+
+onready var AboutButton := $PanelContainer/MarginContainer/HBoxContainer/Panel/VBoxContainer/AboutButton
 
 # Called when theis node enters the scene tree
 func _ready() -> void:
+	
+	var dir = Directory.new()
+	dir.open("res://scripts/apis")
+	dir.list_dir_begin(true, true)
+	var file_name = dir.get_next()
+	while file_name != '':
+		if file_name.begins_with('TextToSpeechApi') or file_name.ends_with('.remap'):
+			file_name = dir.get_next()
+		else:
+			var api = load('res://scripts/apis/%s' % file_name).new()
+			api_list[api.get_name()] = api
+			file_name = dir.get_next()
+	dir.list_dir_end()
+	
 	for api_name in api_list:
 		ApiOptionButton.add_item(api_name)
 		api_list[api_name].connect("error_occured", self, "show_message")
 	
+	var api_name : String = ApiOptionButton.get_item_text(
+		ApiOptionButton.selected
+	)
+	var api = api_list[api_name]
+	SurviceUrlLineEdit.visible =  api.needs_url
+	
 	OneFilePerLineBox.connect("toggled", self, "_on_one_file_per_line_toggled")
 	GetVoicesButton.connect("pressed", self, "_on_get_voices_button_pressed")
 	SaveAudioButton.connect("pressed", self, "_on_save_audio_button_pressed")
-	SaveDailog.connect("dir_selected", self, "_on_dir_selected")
-	SaveDailog.connect("file_selected", self, "_on_file_selected")
-	SaveDailog.connect("popup_hide", self, "_on_popup_hide")
+	SaveDialog.connect("dir_selected", self, "_on_dir_selected")
+	SaveDialog.connect("file_selected", self, "_on_file_selected")
+	SaveDialog.connect("popup_hide", self, "_on_popup_hide")
 	
-	OverwriteDailog.get_ok().hide()
-	OverwriteDailog.add_button("Overwrite", true, "overwrite")
-	OverwriteDailog.add_button("Overwrite All", true, "overwrite-all")
-	OverwriteDailog.add_button("Skip", true, "skip")
+	OverwriteDialog.get_ok().hide()
+	OverwriteDialog.add_button("Overwrite", true, "overwrite")
+	OverwriteDialog.add_button("Overwrite All", true, "overwrite-all")
+	OverwriteDialog.add_button("Skip", true, "skip")
+	
+	ApiOptionButton.connect('item_selected', self, '_on_item_selected')
+	
+	AboutButton.connect("pressed", AboutDialog, "popup_centered")
 
+
+func _on_item_selected(index: int) -> void:
+	ApiKeyLineEdit.clear()
+	var api_name : String = ApiOptionButton.get_item_text(
+		ApiOptionButton.selected
+	)
+	var api = api_list[api_name]
+	SurviceUrlLineEdit.clear()
+	SurviceUrlLineEdit.visible = api.needs_url
+		
+	VoiceOptionButton.clear()
+	
 
 func _on_dir_selected(dir: String) -> void:
 	emit_signal("save_dailog_closed", dir)
@@ -84,7 +121,7 @@ func _on_get_voices_button_pressed() -> void:
 
 
 func _on_save_audio_button_pressed() -> void:
-	if SaveDailog.visible:
+	if SaveDialog.visible:
 		return
 		
 	if VoiceOptionButton.selected == -1:
@@ -94,6 +131,12 @@ func _on_save_audio_button_pressed() -> void:
 	if TtsTextEdit.text.empty():
 		show_message(Warnings.EMPTY_TTS_TEXT)
 		return
+	
+	if ApiKeyLineEdit.text.empty():
+		show_message(Warnings.EMPTY_TTS_TEXT)
+		return
+		
+	
 	
 	var api_key = ApiKeyLineEdit.text
 	var survice_url = SurviceUrlLineEdit.text
@@ -106,10 +149,14 @@ func _on_save_audio_button_pressed() -> void:
 	)
 	var api = api_list[api_name]
 	
+	if SurviceUrlLineEdit.text.empty() and api.needs_url:
+		show_message(Warnings.EMPTY_SURVICE_URL)
+		return
+	
 	if OneFilePerLineBox.pressed:
-		SaveDailog.mode = FileDialog.MODE_OPEN_DIR
-		SaveDailog.popup_exclusive = true
-		SaveDailog.popup_centered(get_viewport_rect().size * 0.75)
+		SaveDialog.mode = FileDialog.MODE_OPEN_DIR
+		SaveDialog.popup_exclusive = true
+		SaveDialog.popup_centered(get_viewport_rect().size * 0.75)
 		
 		var file_prefix = FilePrefixLineEdit.text
 		if file_prefix.empty():
@@ -131,17 +178,17 @@ func _on_save_audio_button_pressed() -> void:
 			var file_path = dir + "/" + file_prefix + "%02d.mp3" % i
 			
 			if not overwrite_all and file.file_exists(file_path):
-				OverwriteDailog.popup_centered()
-				OverwriteDailog.dialog_text = "File %s exist. Do you want to overwrite it?" % file_path
+				OverwriteDialog.popup_centered()
+				OverwriteDialog.dialog_text = "File %s exist. Do you want to overwrite it?" % file_path
 				
-				var choice = yield(OverwriteDailog, "custom_action")
+				var choice = yield(OverwriteDialog, "custom_action")
 				match choice:
 					"overwrite-all":
 						overwrite_all = true
 					"skip":
 						continue
 				
-				OverwriteDailog.hide()
+				OverwriteDialog.hide()
 			
 			var result = save_single_audio_file(
 				api, 
@@ -161,9 +208,9 @@ func _on_save_audio_button_pressed() -> void:
 		show_message("All files saved!")
 		
 	else:
-		SaveDailog.mode = FileDialog.MODE_SAVE_FILE
-		SaveDailog.popup_exclusive = true
-		SaveDailog.popup_centered_clamped(get_viewport_rect().size - Vector2(100, 100) * 0.75)
+		SaveDialog.mode = FileDialog.MODE_SAVE_FILE
+		SaveDialog.popup_exclusive = true
+		SaveDialog.popup_centered_clamped(get_viewport_rect().size - Vector2(100, 100) * 0.75)
 		
 		var file_path : String = yield(self, "save_dailog_closed")
 		if file_path.empty() or file_path.ends_with("/.mp3"):
@@ -212,8 +259,8 @@ func save_single_audio_file(
 
 
 func show_message(text: String) -> void:
-		WarningMessageDailog.dialog_text = text
-		WarningMessageDailog.popup_centered()
+		WarningMessageDialog.dialog_text = text
+		WarningMessageDialog.popup_centered()
 
 
 func set_progress(current: int, count: int) -> void:
